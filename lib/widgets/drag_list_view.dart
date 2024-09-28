@@ -46,34 +46,20 @@ class DragListItem {
   }
 }
 
-/// A widget that displays a list of draggable items.
-class DragListView extends StatelessWidget {
-  DragListView({
+class DragListView extends StatefulWidget {
+  const DragListView({
     super.key,
     this.id,
-    required List<DragListItem> items,
-    this.feedback = const SizedBox.square(
-      dimension: 100,
-      child: ColoredBox(
-        color: Colors.redAccent,
-        child: Icon(
-          Icons.directions_run,
-          size: 40.0,
-        ),
-      ),
-    ),
+    required this.children,
     this.draggingChild,
     required this.onAcceptWithDetails,
-  }) : children = items.map((e) => e.copyWith(listId: id)).toList();
+  });
 
   /// The unique identifier for the drag list
   final int? id;
 
   /// The list of draggable items to display.
   final List<DragListItem> children;
-
-  /// The widget to display as feedback when an item is being dragged.
-  final Widget feedback;
 
   /// The widget to display as the dragged item.
   final Widget? draggingChild;
@@ -82,44 +68,7 @@ class DragListView extends StatelessWidget {
   final void Function(DragTargetAcceptWithDetailsValue) onAcceptWithDetails;
 
   @override
-  Widget build(BuildContext context) {
-    return DragTarget<DragListItem>(
-      builder: (
-        BuildContext context,
-        List<dynamic> accepted,
-        List<dynamic> rejected,
-      ) {
-        return ListView.builder(
-          itemCount: children.length,
-          itemBuilder: (context, index) {
-            return Draggable<DragListItem>(
-              data: children[index],
-              feedback: feedback,
-              childWhenDragging: children[index].draggingChild ??
-                  draggingChild ??
-                  Opacity(
-                    opacity: 0.5,
-                    child: children[index].child,
-                  ),
-              child: children[index].child,
-            );
-          },
-        );
-      },
-      onAcceptWithDetails: (details) {
-        // If the item is being dragged to the same list, do nothing
-        if (details.data.listId == id) {
-          return;
-        }
-
-        onAcceptWithDetails((
-          fromListId: details.data.listId,
-          toListId: id,
-          itemId: details.data.itemId,
-        ));
-      },
-    );
-  }
+  State<DragListView> createState() => _DragListViewState();
 
   DragListView copyWith({
     int? id,
@@ -130,10 +79,73 @@ class DragListView extends StatelessWidget {
   }) {
     return DragListView(
       id: id ?? this.id,
-      items: children ?? this.children,
-      feedback: feedback ?? this.feedback,
+      children: children ?? this.children,
       draggingChild: draggingChild ?? this.draggingChild,
       onAcceptWithDetails: onAcceptWithDetails ?? this.onAcceptWithDetails,
+    );
+  }
+}
+
+class _DragListViewState extends State<DragListView> {
+  List<DragListItem> children = [];
+  @override
+  void initState() {
+    super.initState();
+    children = widget.children.map((e) => e.copyWith(listId: e.listId ?? widget.id)).toList();
+  }
+
+  @override
+  void didUpdateWidget(covariant DragListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    children = widget.children.map((e) => e.copyWith(listId: e.listId ?? widget.id)).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<DragListItem>(
+      builder: (
+        BuildContext context,
+        List<dynamic> accepted,
+        List<dynamic> rejected,
+      ) {
+        return ReorderableListView(
+          onReorder: (oldIndex, newIndex) {
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
+            setState(() {
+              final item = children.removeAt(oldIndex);
+              children.insert(newIndex, item);
+            });
+          },
+          children: children.map((item) {
+            return Draggable<DragListItem>(
+              key: ValueKey(item.itemId),
+              data: item,
+              feedback: Material(child: item.child),
+              childWhenDragging: item.draggingChild ??
+                  widget.draggingChild ??
+                  Opacity(
+                    opacity: 0.5,
+                    child: item.child,
+                  ),
+              child: item.child,
+            );
+          }).toList(),
+        );
+      },
+      onAcceptWithDetails: (details) {
+        // If the item is being dragged to the same list, do nothing
+        if (details.data.listId == widget.id) {
+          return;
+        }
+
+        widget.onAcceptWithDetails((
+          fromListId: details.data.listId,
+          toListId: widget.id,
+          itemId: details.data.itemId,
+        ));
+      },
     );
   }
 }

@@ -51,6 +51,9 @@ class DragListView extends StatefulWidget {
     super.key,
     this.id,
     required this.children,
+    this.leading,
+    this.title,
+    this.actions = const <Widget>[],
     this.draggingChild,
     required this.onAcceptWithDetails,
   });
@@ -60,6 +63,15 @@ class DragListView extends StatefulWidget {
 
   /// The list of draggable items to display.
   final List<DragListItem> children;
+
+  /// The leading widget to display at the top of the list.
+  final Widget? leading;
+
+  /// The title to display at the top of the list.
+  final Widget? title;
+
+  /// The list of actions to display at the top of the list.
+  final List<Widget> actions;
 
   /// The widget to display as the dragged item.
   final Widget? draggingChild;
@@ -109,6 +121,28 @@ class _DragListViewState extends State<DragListView> {
         List<dynamic> rejected,
       ) {
         return ReorderableListView(
+          header: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.leading != null || widget.title != null || widget.actions.isNotEmpty
+                ? [
+                    Row(
+                      children: [
+                        if (widget.leading != null) widget.leading!,
+                        if (widget.title != null) widget.title!,
+                        const Spacer(),
+                        for (var index = 0; index < widget.actions.length; index++)
+                          Padding(
+                            padding: index == widget.actions.length - 1
+                                ? const EdgeInsets.only(right: 16.0)
+                                : const EdgeInsets.only(right: 24.0),
+                            child: widget.actions[index],
+                          ),
+                      ],
+                    ),
+                    const Divider(),
+                  ]
+                : const <Widget>[],
+          ),
           onReorder: (oldIndex, newIndex) {
             if (oldIndex < newIndex) {
               newIndex -= 1;

@@ -15,8 +15,13 @@ class DragListItem {
   const DragListItem({
     this.listId,
     required this.itemId,
-    this.draggingChild,
-    required this.child,
+    this.leading,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.isThreeLine = false,
+    this.onTap,
+    this.onLongPress,
   });
 
   /// The unique identifier for the drag list
@@ -25,23 +30,48 @@ class DragListItem {
   /// The unique identifier for the drag list item
   final int itemId;
 
-  /// The widget to display when the item is being dragged
-  final Widget? draggingChild;
+  final Widget? leading;
 
   /// The main widget to display for the item
-  final Widget child;
+  final Widget title;
+
+  final Widget? subtitle;
+
+  final Widget? trailing;
+
+  final bool isThreeLine;
+
+  /// Called when the user taps this list tile.
+  ///
+  /// Inoperative if [enabled] is false.
+  final GestureTapCallback? onTap;
+
+  /// Called when the user long-presses on this list tile.
+  ///
+  /// Inoperative if [enabled] is false.
+  final GestureLongPressCallback? onLongPress;
 
   DragListItem copyWith({
     int? listId,
     int? itemId,
-    Widget? draggingChild,
-    Widget? child,
+    Widget? leading,
+    Widget? title,
+    Widget? subtitle,
+    Widget? trailing,
+    bool? isThreeLine,
+    GestureTapCallback? onTap,
+    GestureLongPressCallback? onLongPress,
   }) {
     return DragListItem(
       listId: listId ?? this.listId,
       itemId: itemId ?? this.itemId,
-      draggingChild: draggingChild ?? this.draggingChild,
-      child: child ?? this.child,
+      leading: leading ?? this.leading,
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      trailing: trailing ?? this.trailing,
+      isThreeLine: isThreeLine ?? this.isThreeLine,
+      onTap: onTap ?? this.onTap,
+      onLongPress: onLongPress ?? this.onLongPress,
     );
   }
 }
@@ -54,7 +84,6 @@ class DragListView extends StatefulWidget {
     this.leading,
     this.title,
     this.actions = const <Widget>[],
-    this.draggingChild,
     required this.onAcceptWithDetails,
   });
 
@@ -73,9 +102,6 @@ class DragListView extends StatefulWidget {
   /// The list of actions to display at the top of the list.
   final List<Widget> actions;
 
-  /// The widget to display as the dragged item.
-  final Widget? draggingChild;
-
   /// Callback function that is called when an item is accepted by a [DragTarget].
   final void Function(DragTargetAcceptWithDetailsValue) onAcceptWithDetails;
 
@@ -86,13 +112,11 @@ class DragListView extends StatefulWidget {
     int? id,
     List<DragListItem>? children,
     Widget? feedback,
-    Widget? draggingChild,
     void Function(DragTargetAcceptWithDetailsValue)? onAcceptWithDetails,
   }) {
     return DragListView(
       id: id ?? this.id,
       children: children ?? this.children,
-      draggingChild: draggingChild ?? this.draggingChild,
       onAcceptWithDetails: onAcceptWithDetails ?? this.onAcceptWithDetails,
     );
   }
@@ -100,6 +124,7 @@ class DragListView extends StatefulWidget {
 
 class _DragListViewState extends State<DragListView> {
   List<DragListItem> children = [];
+
   @override
   void initState() {
     super.initState();
@@ -153,17 +178,28 @@ class _DragListViewState extends State<DragListView> {
             });
           },
           children: children.map((item) {
-            return Draggable<DragListItem>(
+            return ListTile(
               key: ValueKey(item.itemId),
-              data: item,
-              feedback: Material(child: item.child),
-              childWhenDragging: item.draggingChild ??
-                  widget.draggingChild ??
-                  Opacity(
-                    opacity: 0.5,
-                    child: item.child,
-                  ),
-              child: item.child,
+              leading: item.leading,
+              title: Draggable<DragListItem>(
+                data: item,
+                feedback: Material(child: item.title),
+                childWhenDragging: Opacity(
+                  opacity: 0.5,
+                  child: item.title,
+                ),
+                child: item.title,
+              ),
+              subtitle: item.subtitle,
+              trailing: item.trailing != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 24.0),
+                      child: item.trailing,
+                    )
+                  : null,
+              isThreeLine: item.isThreeLine,
+              onTap: item.onTap,
+              onLongPress: item.onLongPress,
             );
           }).toList(),
         );

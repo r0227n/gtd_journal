@@ -55,27 +55,22 @@ class _SplitViewDemoState extends State<SplitViewDemo> {
         id: 1,
         title: const Text('List 1'),
         children: [
-          DragListItem(
-            itemId: 1,
-            child: Container(
-              color: Colors.red[100],
-              child: const Center(child: Text('View A')),
+          for (final value in [1, 2, 3])
+            DragListItem(
+              itemId: value,
+              title: Container(
+                color: Colors.red[100],
+                child: const Center(child: Text('View A')),
+              ),
+              leading: Checkbox(value: true, onChanged: (value) {}),
+              trailing: const Icon(Icons.abc),
+              onTap: () {
+                showModalSideSheet(
+                  context: context,
+                  builder: (context) => const Center(child: Text('hoge')),
+                );
+              },
             ),
-          ),
-          DragListItem(
-            itemId: 2,
-            child: Container(
-              color: Colors.green[100],
-              child: const Center(child: Text('View B')),
-            ),
-          ),
-          DragListItem(
-            itemId: 3,
-            child: Container(
-              color: Colors.blue[100],
-              child: const Center(child: Text('View C')),
-            ),
-          ),
         ],
         actions: [const Icon(Icons.add), const Icon(Icons.remove)]
             .map((e) => IconButton(
@@ -107,27 +102,20 @@ class _SplitViewDemoState extends State<SplitViewDemo> {
                   DragListView(
                     id: 2,
                     children: [
-                      DragListItem(
-                        itemId: 4,
-                        child: Container(
-                          color: Colors.red[100],
-                          child: const Center(child: Text('View D')),
+                      for (final value in [4, 5, 6])
+                        DragListItem(
+                          itemId: value,
+                          title: Container(
+                            color: Colors.blue[100],
+                            child: const Center(child: Text('View B')),
+                          ),
+                          onTap: () {
+                            showModalSideSheet(
+                              context: context,
+                              builder: (context) => const Center(child: Text('hoge')),
+                            );
+                          },
                         ),
-                      ),
-                      DragListItem(
-                        itemId: 5,
-                        child: Container(
-                          color: Colors.green[100],
-                          child: const Center(child: Text('View E')),
-                        ),
-                      ),
-                      DragListItem(
-                        itemId: 6,
-                        child: Container(
-                          color: Colors.blue[100],
-                          child: const Center(child: Text('View F')),
-                        ),
-                      ),
                     ],
                     actions: const [Text('hoge')],
                     onAcceptWithDetails: (details) {

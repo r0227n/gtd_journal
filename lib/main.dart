@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'widgets/widgets.dart';
 
 void main() => runApp(const MyApp());
@@ -79,7 +78,14 @@ class _SplitViewDemoState extends State<SplitViewDemo> {
           ),
         ],
         actions: [const Icon(Icons.add), const Icon(Icons.remove)]
-            .map((e) => IconButton(icon: e, onPressed: () {}))
+            .map((e) => IconButton(
+                icon: e,
+                onPressed: () {
+                  showModalSideSheet(
+                    context: context,
+                    builder: (context) => const Center(child: Text('hoge')),
+                  );
+                }))
             .toList(),
         onAcceptWithDetails: (details) {
           onAcceptWithDetails(details);

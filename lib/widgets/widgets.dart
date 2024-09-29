@@ -1,2 +1,3 @@
 export 'drag_list_view.dart';
+export 'side_sheet.dart';
 export 'split_view.dart';

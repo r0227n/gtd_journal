@@ -1,0 +1,12 @@
+{
+    "@@locale": "ja",
+    "dueDate": "期限",
+    "noSet": "{text}が未設定です",
+    "@noSet": {
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    }
+}

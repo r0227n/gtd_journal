@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'l10n/l10n.dart';
+import 'themes/theme.dart';
 import 'widgets/widgets.dart';
+import 'repository/sql.dart';
 
 void main() => runApp(const MyApp());
 
@@ -23,6 +25,55 @@ class SplitViewDemo extends StatefulWidget {
 }
 
 class _SplitViewDemoState extends State<SplitViewDemo> {
+  List<DragListView> children = [];
+
+  final MockSqlRepository mockSqlRepository = MockSqlRepository();
+  late final Future<List<Task>> futureTasks;
+
+  @override
+  void initState() {
+    super.initState();
+    children.add(
+      DragListView(
+        id: 1,
+        title: const Text('List 1'),
+        children: [
+          for (final value in [1, 2, 3])
+            DragListItem(
+              itemId: value,
+              title: Container(
+                color: Colors.red[100],
+                child: const Center(child: Text('View A')),
+              ),
+              leading: Checkbox(value: true, onChanged: (value) {}),
+              trailing: const Icon(Icons.abc),
+              onTap: () {
+                showModalSideSheet(
+                  context: context,
+                  builder: (context) => const Center(child: Text('hoge')),
+                );
+              },
+            ),
+        ],
+        actions: [const Icon(Icons.add), const Icon(Icons.remove)]
+            .map((e) => IconButton(
+                icon: e,
+                onPressed: () {
+                  showModalSideSheet(
+                    context: context,
+                    builder: (context) => const Center(child: Text('hoge')),
+                  );
+                }))
+            .toList(),
+        onAcceptWithDetails: (details) {
+          onAcceptWithDetails(details);
+        },
+      ),
+    );
+
+    futureTasks = mockSqlRepository.getTasks();
+  }
+
   void onAcceptWithDetails(DragTargetAcceptWithDetailsValue details) {
     final dragListItem = children
         .expand((element) => element.children)
@@ -46,48 +97,6 @@ class _SplitViewDemoState extends State<SplitViewDemo> {
     });
   }
 
-  List<DragListView> children = [];
-
-  @override
-  void initState() {
-    super.initState();
-    children.add(
-      DragListView(
-        id: 1,
-        title: const Text('List 1'),
-        children: [
-          DragListItem(
-            itemId: 1,
-            child: Container(
-              color: Colors.red[100],
-              child: const Center(child: Text('View A')),
-            ),
-          ),
-          DragListItem(
-            itemId: 2,
-            child: Container(
-              color: Colors.green[100],
-              child: const Center(child: Text('View B')),
-            ),
-          ),
-          DragListItem(
-            itemId: 3,
-            child: Container(
-              color: Colors.blue[100],
-              child: const Center(child: Text('View C')),
-            ),
-          ),
-        ],
-        actions: [const Icon(Icons.add), const Icon(Icons.remove)]
-            .map((e) => IconButton(icon: e, onPressed: () {}))
-            .toList(),
-        onAcceptWithDetails: (details) {
-          onAcceptWithDetails(details);
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,27 +110,20 @@ class _SplitViewDemoState extends State<SplitViewDemo> {
                   DragListView(
                     id: 2,
                     children: [
-                      DragListItem(
-                        itemId: 4,
-                        child: Container(
-                          color: Colors.red[100],
-                          child: const Center(child: Text('View D')),
+                      for (final value in [4, 5, 6])
+                        DragListItem(
+                          itemId: value,
+                          title: Container(
+                            color: Colors.blue[100],
+                            child: const Center(child: Text('View B')),
+                          ),
+                          onTap: () {
+                            showModalSideSheet(
+                              context: context,
+                              builder: (context) => const Center(child: Text('hoge')),
+                            );
+                          },
                         ),
-                      ),
-                      DragListItem(
-                        itemId: 5,
-                        child: Container(
-                          color: Colors.green[100],
-                          child: const Center(child: Text('View E')),
-                        ),
-                      ),
-                      DragListItem(
-                        itemId: 6,
-                        child: Container(
-                          color: Colors.blue[100],
-                          child: const Center(child: Text('View F')),
-                        ),
-                      ),
                     ],
                     actions: const [Text('hoge')],
                     onAcceptWithDetails: (details) {
@@ -143,7 +145,68 @@ class _SplitViewDemoState extends State<SplitViewDemo> {
           ),
         ],
       ),
-      body: SplitView(children: children),
+      body: FutureBuilder(
+          future: futureTasks,
+          builder: (context, snapshot) {
+            return switch ((snapshot.connectionState, snapshot.data)) {
+              (ConnectionState.waiting, null) => const Center(child: CircularProgressIndicator()),
+              (ConnectionState.done, null) => const Center(child: Text('No data')),
+              (ConnectionState.done, List<Task> tasks) => SplitView(
+                  children: [
+                    DragListView(
+                        children: tasks
+                            .map((e) => DragListItem(
+                                  itemId: e.id,
+                                  leading: Checkbox(value: e.isCompleted, onChanged: (value) {}),
+                                  title: Text(
+                                    e.title,
+                                    style: Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                  subtitle: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: TextButton(
+                                      onPressed: () async {
+                                        showDatePicker(
+                                          context: context,
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                                          initialDate: DateTime.now(),
+                                        );
+                                        // TODO: update dueAt
+                                      },
+                                      child: Text(
+                                        e.dueAt?.toYmd() ??
+                                            context.l10n.noSet(context.l10n.dueDate),
+                                      ),
+                                    ),
+                                  ),
+                                  trailing: Wrap(
+                                    spacing: 8.0,
+                                    children: e.tags
+                                        .map((e) => Chip(
+                                              label: Text(e.name,
+                                                  style: const TextStyle(color: Colors.white)),
+                                              backgroundColor: e.color,
+                                            ))
+                                        .toList(),
+                                  ),
+                                  onTap: () {
+                                    showModalSideSheet(
+                                      context: context,
+                                      builder: (context) => Center(
+                                        child: Text(e.description),
+                                      ),
+                                    );
+                                  },
+                                ))
+                            .toList(),
+                        onAcceptWithDetails: onAcceptWithDetails)
+                  ],
+                ),
+              (ConnectionState.done, Error error) => Center(child: Text('Error: $error')),
+              _ => const Center(child: Text('Error')),
+            };
+          }),
     );
   }
 }

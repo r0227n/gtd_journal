@@ -1,3 +1,4 @@
+import 'folder.dart';
 import 'tag.dart';
 
 class Task {
@@ -31,7 +32,7 @@ class Task {
   final List<Tag> tags;
 
   /// The folder of the task
-  final String folder;
+  final Folder folder;
 
   /// The date and time the task was created
   final DateTime createdAt;
@@ -54,7 +55,7 @@ class Task {
     String? title,
     String? description,
     List<Tag>? tags,
-    String? folder,
+    Folder? folder,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? dueAt,
@@ -85,7 +86,7 @@ class Task {
       'title': title,
       'description': description,
       'tags': tags.map((e) => e.toJson()).toList(),
-      'folder': folder,
+      'folder': folder.toJson(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'due_at': dueAt?.toIso8601String(),
@@ -100,7 +101,7 @@ class Task {
       title: map['title'] as String,
       description: map['description'] as String,
       tags: (map['tags'] as List).map((e) => Tag.fromJson(Map<String, dynamic>.from(e))).toList(),
-      folder: map['folder'] as String,
+      folder: Folder.fromJson(Map<String, dynamic>.from(map['folder'] as Map)),
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
       dueAt: map['due_at'] == null ? null : DateTime.parse(map['due_at'] as String),

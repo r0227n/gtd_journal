@@ -8,12 +8,14 @@
             {
                 "id": 0,
                 "name": "important",
-                "color": 4294198070
+                "color": 4294198070,
+                "priority": 0
             },
             {
                 "id": 1,
                 "name": "work",
-                "color": 4294198070
+                "color": 4294198070,
+                "priority": 1
             }
         ],
         "folder": "Projects",
@@ -32,12 +34,14 @@
             {
                 "id": 0,
                 "name": "important",
-                "color": 4294198070
+                "color": 4294198070,
+                "priority": 0
             },
             {
                 "id": 1,
                 "name": "work",
-                "color": 4294198070
+                "color": 4294198070,
+                "priority": 1
             }
         ],
         "folder": "Projects",
@@ -56,12 +60,14 @@
             {
                 "id": 0,
                 "name": "important",
-                "color": 4294198070
+                "color": 4294198070,
+                "priority": 0
             },
             {
                 "id": 1,
                 "name": "work",
-                "color": 4294198070
+                "color": 4294198070,
+                "priority": 1
             }
         ],
         "folder": "Life",

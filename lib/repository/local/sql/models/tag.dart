@@ -5,6 +5,7 @@ class Tag {
     required this.id,
     required this.name,
     required this.color,
+    this.priority = 0,
   });
 
   /// The unique identifier for the tag
@@ -16,24 +17,29 @@ class Tag {
   /// The color of the tag
   final Color color;
 
+  /// The priority of the tag
+  final int priority;
+
   Tag copyWith({
     int? id,
     String? name,
     Color? color,
+    int? priority,
   }) {
     return Tag(
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
+      priority: priority ?? this.priority,
     );
   }
 
   Map<String, dynamic> toJson() {
-    color.value;
     return {
       'id': id,
       'name': name,
       'color': color.value,
+      'priority': priority,
     };
   }
 
@@ -42,6 +48,7 @@ class Tag {
       id: map['id'] as int,
       name: map['name'] as String,
       color: Color(map['color'] as int),
+      priority: map['priority'] as int,
     );
   }
 }

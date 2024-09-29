@@ -1,0 +1,12 @@
+{
+    "@@locale": "en",
+    "dueDate": "Due Date",
+    "noSet": "No {text} set",
+    "@noSet": {
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    }
+}

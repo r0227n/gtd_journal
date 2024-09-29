@@ -68,7 +68,14 @@ class TaskState extends _$TaskState {
 
   late final MockSqlRepository mockSqlRepository;
 
-  List<FolderState> getFolders(List<Task> tasks) {
+  List<FolderState> getFolders(
+    List<Task> tasks, {
+    bool ignoreCompleted = false,
+  }) {
+    if (ignoreCompleted) {
+      tasks = tasks.where((e) => e.completedAt != null).toList();
+    }
+
     final folders = tasks.map((e) => e.folder).toSet();
 
     final states = folders.map((e) => FolderState.fromFoloderWithTasks(e, tasks)).toList();
@@ -98,5 +105,54 @@ class TaskState extends _$TaskState {
 
       return update.sortByFolderPriority();
     });
+  }
+
+  Future<void> updateState({
+    required int id,
+    int? parentId,
+    String? title,
+    String? description,
+    List<Tag>? tags,
+    Folder? folder,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? dueAt,
+    DateTime? completedAt,
+    int? priority,
+  }) async {
+    final List<Future> queries = [];
+
+    /// TODO: propertyのnull毎に更新処理を追加
+
+    await Future.wait([
+      update((tasks) {
+        state = const AsyncLoading();
+
+        final task = tasks.firstWhere((e) => e.id == id);
+
+        final update = tasks.map((e) {
+          if (e.id == id) {
+            return task.copyWith(
+              id: id,
+              parentId: parentId ?? task.parentId,
+              title: title ?? task.title,
+              description: description ?? task.description,
+              tags: tags ?? task.tags,
+              folder: folder ?? task.folder,
+              createdAt: createdAt ?? task.createdAt,
+              updatedAt: updatedAt ?? task.updatedAt,
+              dueAt: dueAt ?? task.dueAt,
+              completedAt: completedAt ?? task.completedAt,
+              priority: priority ?? task.priority,
+            );
+          }
+
+          return e;
+        }).toList();
+
+        return update.sortByFolderPriority();
+      }),
+      ...queries,
+    ]);
   }
 }

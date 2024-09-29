@@ -38,7 +38,11 @@ class Home extends ConsumerWidget {
                       .map(
                         (e) => DragListItem(
                           itemId: e.id,
-                          leading: Checkbox(value: e.isCompleted, onChanged: (value) {}),
+                          leading: Checkbox(
+                              value: e.isCompleted,
+                              onChanged: (_) => ref
+                                  .read(taskStateProvider.notifier)
+                                  .updateState(id: e.id, completedAt: DateTime.now())),
                           title: Text(
                             e.title,
                             style: Theme.of(context).textTheme.titleMedium,
@@ -47,13 +51,19 @@ class Home extends ConsumerWidget {
                             alignment: Alignment.centerLeft,
                             child: TextButton(
                               onPressed: () async {
-                                showDatePicker(
+                                final selectedDate = await showDatePicker(
                                   context: context,
                                   firstDate: DateTime.now(),
                                   lastDate: DateTime.now().add(const Duration(days: 365)),
                                   initialDate: DateTime.now(),
                                 );
-                                // TODO: update dueAt
+                                if (selectedDate == null) {
+                                  return;
+                                }
+
+                                await ref
+                                    .read(taskStateProvider.notifier)
+                                    .updateState(id: e.id, dueAt: selectedDate);
                               },
                               child: Text(
                                 e.dueAt?.toYmd() ?? context.l10n.noSet(context.l10n.dueDate),

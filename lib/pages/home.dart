@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gtd_journal/state/project_state.dart';
 import '/l10n/l10n.dart';
 import '/themes/theme.dart';
 import '/state/task_state.dart';
@@ -10,7 +11,7 @@ class Home extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final taskState = ref.watch(taskStateProvider);
+    final projectState = ref.watch(projectStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -26,11 +27,11 @@ class Home extends ConsumerWidget {
           ),
         ],
       ),
-      body: taskState.when(
-        data: (folders) {
+      body: projectState.when(
+        data: (projects) {
           return SplitView(
             children: [
-              for (final folder in ref.read(taskStateProvider.notifier).getFolders(folders))
+              for (final folder in projects)
                 DragListView(
                   id: folder.folder.id,
                   title: Text(folder.folder.name),

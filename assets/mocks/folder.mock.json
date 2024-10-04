@@ -1,0 +1,23 @@
+[
+    {
+        "id": 0,
+        "parent_id": null,
+        "name": "Projects",
+        "color": 4294198070,
+        "priority": 0
+    },
+    {
+        "id": 1,
+        "parent_id": null,
+        "name": "Life",
+        "color": 4294198070,
+        "priority": 1
+    },
+    {
+        "id": 2,
+        "parent_id": null,
+        "name": "Work",
+        "color": 4294198070,
+        "priority": 2
+    }
+]

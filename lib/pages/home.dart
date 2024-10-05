@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../repository/sql.dart';
 import '../widgets/widgets.dart';
 import '../l10n/l10n.dart';
 import '../themes/theme.dart';
@@ -100,82 +101,106 @@ class ProjectListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DragListView(
-      id: project.folder.id,
-      title: Text(project.folder.name),
-      actions: [
-        IconButton(
-          onPressed: () {
-            ref.read(boardViewModelProvider(Board.project).notifier).remove(project);
-          },
-          icon: const Icon(Icons.close),
-        )
-      ],
-      children: project.tasks
-          .map(
-            (e) => DragListItem(
-              itemId: e.id,
-              leading: Checkbox(
-                  value: e.isCompleted,
-                  onChanged: (_) => ref
-                      .read(taskStateProvider.notifier)
-                      .updateState(id: e.id, completedAt: DateTime.now())),
-              title: Text(
-                e.title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              subtitle: Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: () async {
-                    final selectedDate = await showDatePicker(
-                      context: context,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                      initialDate: DateTime.now(),
-                    );
-                    if (selectedDate == null) {
-                      return;
-                    }
-
-                    await ref
-                        .read(taskStateProvider.notifier)
-                        .updateState(id: e.id, dueAt: selectedDate);
-                  },
-                  child: Text(
-                    e.dueAt?.toYmd() ?? context.l10n.noSet(context.l10n.dueDate),
-                  ),
-                ),
-              ),
-              trailing: Wrap(
-                spacing: 8.0,
-                children: e.tags
-                    .map((e) => Chip(
-                          label: Text(e.name, style: const TextStyle(color: Colors.white)),
-                          backgroundColor: e.color,
-                        ))
-                    .toList(),
-              ),
-              onTap: () {
-                showModalSideSheet(
-                  context: context,
-                  builder: (context) => Center(
-                    child: Text(e.description),
-                  ),
-                );
-              },
-            ),
+    return LayoutBuilder(builder: (context, constraints) {
+      return DragListView(
+        id: project.folder.id,
+        title: Text(constraints.minWidth.toString()),
+        actions: [
+          IconButton(
+            onPressed: () {
+              ref.read(boardViewModelProvider(Board.project).notifier).remove(project);
+            },
+            icon: const Icon(Icons.close),
           )
-          .toList(),
-      onAcceptWithDetails: (details) async {
-        if (details.fromListId != null && details.toListId != null) {
-          ref.read(projectStateProvider.notifier).moveFolder(
-                fromListId: details.fromListId!,
-                toListId: details.toListId!,
-                taskId: details.itemId,
+        ],
+        children: project.tasks.map((e) {
+          final subtitle = constraints.maxWidth > Breakpoints.mobilieMaxWith
+              ? _subtitle(context: context, ref: ref, task: e)
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _subtitle(context: context, ref: ref, task: e),
+                    _tags(tags: project.tasks.first.tags),
+                  ],
+                );
+
+          final trailing = constraints.maxWidth > Breakpoints.mobilieMaxWith
+              ? _tags(tags: project.tasks.first.tags)
+              : null;
+
+          return DragListItem(
+            itemId: e.id,
+            leading: Checkbox(
+                value: e.isCompleted,
+                onChanged: (_) => ref
+                    .read(taskStateProvider.notifier)
+                    .updateState(id: e.id, completedAt: DateTime.now())),
+            title: Text(
+              e.title,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            subtitle: subtitle,
+            trailing: trailing,
+            onTap: () {
+              showModalSideSheet(
+                context: context,
+                builder: (context) => Center(
+                  child: Text(e.description),
+                ),
               );
-        }
-      },
+            },
+          );
+        }).toList(),
+        onAcceptWithDetails: (details) async {
+          if (details.fromListId != null && details.toListId != null) {
+            ref.read(projectStateProvider.notifier).moveFolder(
+                  fromListId: details.fromListId!,
+                  toListId: details.toListId!,
+                  taskId: details.itemId,
+                );
+          }
+        },
+      );
+    });
+  }
+
+  Widget _subtitle({
+    required BuildContext context,
+    required WidgetRef ref,
+    required Task task,
+  }) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: () async {
+          final selectedDate = await showDatePicker(
+            context: context,
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 365)),
+            initialDate: DateTime.now(),
+          );
+          if (selectedDate == null) {
+            return;
+          }
+
+          await ref.read(taskStateProvider.notifier).updateState(id: task.id, dueAt: selectedDate);
+        },
+        child: Text(
+          task.dueAt?.toYmd() ?? context.l10n.noSet(context.l10n.dueDate),
+        ),
+      ),
+    );
+  }
+
+  Widget _tags({required List<Tag> tags}) {
+    return Wrap(
+      spacing: 8.0,
+      children: tags
+          .map((e) => Chip(
+                label: Text(e.name, style: const TextStyle(color: Colors.white)),
+                backgroundColor: e.color,
+              ))
+          .toList(),
     );
   }
 }

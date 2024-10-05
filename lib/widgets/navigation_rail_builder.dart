@@ -1,43 +1,6 @@
 import 'package:flutter/material.dart';
 import 'split_view.dart';
 
-/// A builder class for creating a custom navigation rail destination widget.
-///
-/// The `RailWidgetBuilder` class allows you to define a custom navigation rail
-/// destination with various properties such as icons, labels, padding, and more.
-///
-/// The class provides the following properties:
-///
-/// - `icon`: The icon of the destination. Typically an [Icon] or an [ImageIcon]
-///   widget. If another type of widget is provided, it should configure itself
-///   to match the current [IconTheme] size and color. If [selectedIcon] is
-///   provided, this will only be displayed when the destination is not selected.
-///   To make the [NavigationRail] more accessible, consider choosing an icon
-///   with a stroked and filled version, such as [Icons.cloud] and
-///   [Icons.cloud_queue]. The [icon] should be set to the stroked version and
-///   [selectedIcon] to the filled version.
-///
-/// - `selectedIcon`: An alternative icon displayed when this destination is
-///   selected. If this icon is not provided, the [NavigationRail] will display
-///   [icon] in either state. The size, color, and opacity of the
-///   [NavigationRail.selectedIconTheme] will still apply.
-///
-/// - `indicatorColor`: The color of the [indicatorShape] when this destination
-///   is selected.
-///
-/// - `indicatorShape`: The shape of the indicator when this destination is
-///   selected.
-///
-/// - `label`: The label of the destination.
-///
-/// - `padding`: The padding around the destination.
-///
-/// - `disabled`: Indicates that this destination is inaccessible.
-///
-/// - `description`: An optional description for the destination.
-///
-/// - `builder`: A [WidgetBuilder] that builds the custom widget for the
-///   destination.
 class RailWidgetBuilder {
   const RailWidgetBuilder({
     required this.icon,
@@ -47,8 +10,8 @@ class RailWidgetBuilder {
     required this.label,
     this.padding,
     this.disabled = false,
-    this.description,
-    required this.builder,
+    this.panel,
+    required this.children,
   }) : selectedIcon = selectedIcon ?? icon;
 
   /// The icon of the destination.
@@ -71,11 +34,11 @@ class RailWidgetBuilder {
   /// Indicates that this destination is inaccessible.
   final bool disabled;
 
-  /// An optional description for the destination.
-  final Widget? description;
+  /// An optional panel for the destination.
+  final Widget? panel;
 
-  /// A [WidgetBuilder] that builds the custom widget for the destination.
-  final WidgetBuilder builder;
+  /// The widget to display when this destination is selected.
+  final List<Widget> children;
 }
 
 class NavigationRailBuilder extends StatefulWidget {
@@ -83,12 +46,12 @@ class NavigationRailBuilder extends StatefulWidget {
     super.key,
     this.index = 0,
     required this.destinations,
-    this.initialOpenDescription = true,
+    this.initialOpenPanel = true,
   });
 
   final int index;
   final List<RailWidgetBuilder> destinations;
-  final bool initialOpenDescription;
+  final bool initialOpenPanel;
 
   @override
   State<NavigationRailBuilder> createState() => _NavigationRailBuilderState();
@@ -96,13 +59,13 @@ class NavigationRailBuilder extends StatefulWidget {
 
 class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
   late int selectedRailIndex;
-  late bool openDescription;
+  late bool openPanel;
 
   @override
   void initState() {
     super.initState();
     selectedRailIndex = widget.index;
-    openDescription = widget.initialOpenDescription;
+    openPanel = widget.initialOpenPanel;
   }
 
   @override
@@ -129,8 +92,8 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
               useIndicator: true,
               onDestinationSelected: (int index) {
                 setState(() {
-                  if (toggleOpenDescription(index)) {
-                    openDescription = !openDescription;
+                  if (toggleOpenPanel(index)) {
+                    openPanel = !openPanel;
                   }
                   selectedRailIndex = index;
                 });
@@ -140,9 +103,9 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
           Expanded(
             child: SplitView(
               children: [
-                if (widget.destinations[selectedRailIndex].description != null && openDescription)
-                  widget.destinations[selectedRailIndex].description!,
-                widget.destinations[selectedRailIndex].builder(context),
+                if (widget.destinations[selectedRailIndex].panel != null && openPanel)
+                  widget.destinations[selectedRailIndex].panel!,
+                ...widget.destinations[selectedRailIndex].children,
               ],
             ),
           )
@@ -151,7 +114,7 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
     );
   }
 
-  bool toggleOpenDescription(int index) {
-    return selectedRailIndex != index && !openDescription || selectedRailIndex == index;
+  bool toggleOpenPanel(int index) {
+    return selectedRailIndex != index && !openPanel || selectedRailIndex == index;
   }
 }

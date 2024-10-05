@@ -62,31 +62,28 @@ class _SplitViewState extends State<SplitView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      scrollbarOrientation: ScrollbarOrientation.bottom,
-      child: Row(
-        children: [
-          for (int i = 0; i <= dividerPositions.length; i++) ...[
-            Expanded(
-              flex: i == 0
-                  ? (dividerPositions.isEmpty ? 100 : (dividerPositions[0] * 100).round())
-                  : i == dividerPositions.length
-                      ? ((1 - dividerPositions.last) * 100).round()
-                      : ((dividerPositions[i] - dividerPositions[i - 1]) * 100).round(),
-              child: widget.children[i],
-            ),
-            if (i < dividerPositions.length)
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onHorizontalDragUpdate: (details) => _handleDragUpdate(i, details),
-                child: CustomPaint(
-                  size: const Size(10, double.infinity),
-                  painter: DividerPainter(),
-                ),
+    return Row(
+      children: [
+        for (int i = 0; i <= dividerPositions.length; i++) ...[
+          Expanded(
+            flex: i == 0
+                ? (dividerPositions.isEmpty ? 100 : (dividerPositions[0] * 100).round())
+                : i == dividerPositions.length
+                    ? ((1 - dividerPositions.last) * 100).round()
+                    : ((dividerPositions[i] - dividerPositions[i - 1]) * 100).round(),
+            child: widget.children[i],
+          ),
+          if (i < dividerPositions.length)
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragUpdate: (details) => _handleDragUpdate(i, details),
+              child: CustomPaint(
+                size: const Size(10, double.infinity),
+                painter: DividerPainter(),
               ),
-          ],
+            ),
         ],
-      ),
+      ],
     );
   }
 }

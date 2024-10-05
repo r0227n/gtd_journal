@@ -49,13 +49,6 @@ class ProjectState extends _$ProjectState {
     });
   }
 
-  Folder? getFolderByTaskId(int id) {
-    return switch (state) {
-      AsyncValue(:final value?) => value.firstWhere((e) => e.tasks.any((e) => e.id == id)).folder,
-      _ => null,
-    };
-  }
-
   Project getProjectByFolderId(int id) {
     return switch (state) {
       AsyncValue(:final value?) => value.firstWhere((e) => e.folder.id == id),

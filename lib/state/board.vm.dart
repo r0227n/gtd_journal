@@ -51,5 +51,6 @@ class BoardViewModel extends _$BoardViewModel {
 
   void remove(BoardItem item) {
     state = state.where((e) => e != item).toList();
+    ref.read(idsProvider.notifier).remove((item as Project).folder.id);
   }
 }

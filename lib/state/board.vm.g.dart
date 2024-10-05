@@ -20,7 +20,7 @@ final idsProvider = AutoDisposeNotifierProvider<Ids, List<int>>.internal(
 );
 
 typedef _$Ids = AutoDisposeNotifier<List<int>>;
-String _$boardViewModelHash() => r'0b36283f4171d9c7e42eee75a2f52c27cd35293e';
+String _$boardViewModelHash() => r'4ba98748b8f63b278b9e22d8cfbb05b5ccee2186';
 
 /// Copied from Dart SDK
 class _SystemHash {

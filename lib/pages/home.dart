@@ -27,21 +27,36 @@ class Home extends ConsumerWidget {
               panel: ListView.builder(
                 itemCount: projects.length,
                 itemBuilder: (context, index) {
-                  return ExpansionTile(
+                  return FolderListTile(
                     title: Text(projects[index].folder.name),
+                    trailing: projectBoard.contains(projects[index])
+                        ? IconButton(
+                            onPressed: () {
+                              final project =
+                                  projectMethod.getProjectByFolderId(projects[index].folder.id);
+
+                              ref
+                                  .read(boardViewModelProvider(Board.project).notifier)
+                                  .remove(project);
+                            },
+                            icon: const Icon(Icons.close_fullscreen),
+                          )
+                        : IconButton(
+                            onPressed: () {
+                              final project =
+                                  projectMethod.getProjectByFolderId(projects[index].folder.id);
+
+                              ref.read(boardViewModelProvider(Board.project).notifier).add(project);
+                            },
+                            icon: const Icon(Icons.open_in_full),
+                          ),
                     children: projects[index]
                         .tasks
                         .map(
                           (e) => ListTile(
                             title: Text(e.title),
                             subtitle: Text(e.description),
-                            onTap: () {
-                              final folder = projectMethod.getFolderByTaskId(e.id);
-
-                              final project = projectMethod.getProjectByFolderId(folder?.id ?? -1);
-
-                              ref.read(boardViewModelProvider(Board.project).notifier).add(project);
-                            },
+                            onTap: () {},
                           ),
                         )
                         .toList(),

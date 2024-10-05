@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 class SplitView extends StatefulWidget {
   const SplitView({
     super.key,
+    this.constraints = const BoxConstraints(minWidth: 0, minHeight: 0),
     required this.children,
   });
 
+  final BoxConstraints constraints;
   final List<Widget> children;
 
   @override
@@ -52,10 +54,15 @@ class _SplitViewState extends State<SplitView> {
 
   void _handleDragUpdate(int index, DragUpdateDetails details) {
     setState(() {
+      final minDividerPosition = widget.constraints.minWidth / context.size!.width;
+
       dividerPositions[index] += details.delta.dx / context.size!.width;
+
       dividerPositions[index] = dividerPositions[index].clamp(
-        index == 0 ? 0.1 : dividerPositions[index - 1] + 0.1,
-        index == dividerPositions.length - 1 ? 0.9 : dividerPositions[index + 1] - 0.1,
+        index == 0 ? minDividerPosition : dividerPositions[index - 1] + minDividerPosition,
+        index == dividerPositions.length - 1
+            ? 1.0 - minDividerPosition
+            : dividerPositions[index + 1] - minDividerPosition,
       );
     });
   }

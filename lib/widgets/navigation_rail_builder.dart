@@ -45,11 +45,13 @@ class NavigationRailBuilder extends StatefulWidget {
   const NavigationRailBuilder({
     super.key,
     this.index = 0,
+    this.minWidth = 50,
     required this.destinations,
     this.initialOpenPanel = true,
   });
 
   final int index;
+  final double minWidth;
   final List<RailWidgetBuilder> destinations;
   final bool initialOpenPanel;
 
@@ -102,6 +104,7 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
           ),
           Expanded(
             child: SplitView(
+              constraints: BoxConstraints(minWidth: widget.minWidth),
               children: [
                 if (widget.destinations[selectedRailIndex].panel != null && openPanel)
                   widget.destinations[selectedRailIndex].panel!,

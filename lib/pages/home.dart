@@ -21,70 +21,73 @@ class Home extends ConsumerWidget {
       appBar: AppBar(),
       body: projectState.when(
         data: (projects) {
-          return NavigationRailBuilder(destinations: [
-            RailWidgetBuilder(
-              icon: const Icon(Icons.home),
-              label: const Text('home'),
-              panel: ListView.builder(
-                itemCount: projects.length,
-                itemBuilder: (context, index) {
-                  final folderTrailing = projectBoard.contains(projects[index])
-                      ? IconButton(
-                          onPressed: () {
-                            final project =
-                                projectMethod.getProjectByFolderId(projects[index].folder.id);
+          return NavigationRailBuilder(
+            minWidth: Breakpoints.mobileMinWidth,
+            destinations: [
+              RailWidgetBuilder(
+                icon: const Icon(Icons.home),
+                label: const Text('home'),
+                panel: ListView.builder(
+                  itemCount: projects.length,
+                  itemBuilder: (context, index) {
+                    final folderTrailing = projectBoard.contains(projects[index])
+                        ? IconButton(
+                            onPressed: () {
+                              final project =
+                                  projectMethod.getProjectByFolderId(projects[index].folder.id);
 
-                            ref
-                                .read(boardViewModelProvider(Board.project).notifier)
-                                .remove(project);
-                          },
-                          icon: const Icon(Icons.close_fullscreen),
-                        )
-                      : IconButton(
-                          onPressed: () {
-                            final project =
-                                projectMethod.getProjectByFolderId(projects[index].folder.id);
-
-                            ref.read(boardViewModelProvider(Board.project).notifier).add(project);
-                          },
-                          icon: const Icon(Icons.open_in_full),
-                        );
-
-                  return FolderListTile(
-                    title: Text(projects[index].folder.name),
-                    trailing: folderTrailing,
-                    children: projects[index]
-                        .tasks
-                        .map(
-                          (e) => ListTile(
-                            title: Text(e.title),
-                            subtitle: Text(e.description),
-                            onTap: () {
-                              showModalSideSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return Center(
-                                      child: Text(e.description),
-                                    );
-                                  });
+                              ref
+                                  .read(boardViewModelProvider(Board.project).notifier)
+                                  .remove(project);
                             },
-                          ),
-                        )
-                        .toList(),
-                  );
-                },
+                            icon: const Icon(Icons.close_fullscreen),
+                          )
+                        : IconButton(
+                            onPressed: () {
+                              final project =
+                                  projectMethod.getProjectByFolderId(projects[index].folder.id);
+
+                              ref.read(boardViewModelProvider(Board.project).notifier).add(project);
+                            },
+                            icon: const Icon(Icons.open_in_full),
+                          );
+
+                    return FolderListTile(
+                      title: Text(projects[index].folder.name),
+                      trailing: folderTrailing,
+                      children: projects[index]
+                          .tasks
+                          .map(
+                            (e) => ListTile(
+                              title: Text(e.title),
+                              subtitle: Text(e.description),
+                              onTap: () {
+                                showModalSideSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return Center(
+                                        child: Text(e.description),
+                                      );
+                                    });
+                              },
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
+                ),
+                children: projectBoard
+                    .map((e) => Builder(builder: (context) => ProjectListView(e)))
+                    .toList(),
               ),
-              children: projectBoard
-                  .map((e) => Builder(builder: (context) => ProjectListView(e)))
-                  .toList(),
-            ),
-            const RailWidgetBuilder(
-              icon: Icon(Icons.settings),
-              label: Text('settings'),
-              panel: Text('settings'),
-              children: [Text('settings')],
-            ),
-          ]);
+              const RailWidgetBuilder(
+                icon: Icon(Icons.settings),
+                label: Text('settings'),
+                panel: Text('settings'),
+                children: [Text('settings')],
+              ),
+            ],
+          );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) =>

@@ -104,6 +104,7 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
           ),
           Expanded(
             child: SplitView(
+              initialDividerPositions: const [0.2],
               constraints: BoxConstraints(minWidth: widget.minWidth),
               children: [
                 if (widget.destinations[selectedRailIndex].panel != null && openPanel)
@@ -112,6 +113,10 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
                   const SizedBox.square(dimension: 100),
                 ...widget.destinations[selectedRailIndex].children,
               ],
+              onDividerPositionsChanged: (List<double> dividerPositions) {},
+              onError: (Exception e) {
+                print(e);
+              },
             ),
           )
         ],

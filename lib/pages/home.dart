@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '/state/project_state.dart';
-import '/widgets/widgets.dart';
-import '/l10n/l10n.dart';
-import '/themes/theme.dart';
-
+import '../widgets/widgets.dart';
+import '../l10n/l10n.dart';
+import '../themes/theme.dart';
+import '../state/board.vm.dart';
+import '../state/project_state.dart';
 import '../state/task_state.dart';
 
 class Home extends ConsumerWidget {
@@ -14,11 +13,11 @@ class Home extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectState = ref.watch(projectStateProvider);
+    final projectMethod = ref.read(projectStateProvider.notifier);
+    final projectBoard = ref.watch(boardViewModelProvider(Board.project)).cast<Project>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Split View Demo'),
-      ),
+      appBar: AppBar(),
       body: projectState.when(
         data: (projects) {
           return NavigationRailBuilder(destinations: [
@@ -37,12 +36,11 @@ class Home extends ConsumerWidget {
                             title: Text(e.title),
                             subtitle: Text(e.description),
                             onTap: () {
-                              final folder =
-                                  ref.read(projectStateProvider.notifier).getFolderByTaskId(e.id);
+                              final folder = projectMethod.getFolderByTaskId(e.id);
 
-                              final project = ref
-                                  .read(projectStateProvider.notifier)
-                                  .getProjectByFolderId(folder?.id ?? -1);
+                              final project = projectMethod.getProjectByFolderId(folder?.id ?? -1);
+
+                              ref.read(boardViewModelProvider(Board.project).notifier).add(project);
                             },
                           ),
                         )
@@ -50,7 +48,9 @@ class Home extends ConsumerWidget {
                   );
                 },
               ),
-              children: projects.map((e) => ProjectListView(e)).toList(),
+              children: projectBoard
+                  .map((e) => Builder(builder: (context) => ProjectListView(e)))
+                  .toList(),
             ),
             const RailWidgetBuilder(
               icon: Icon(Icons.settings),
@@ -78,6 +78,14 @@ class ProjectListView extends ConsumerWidget {
     return DragListView(
       id: project.folder.id,
       title: Text(project.folder.name),
+      actions: [
+        IconButton(
+          onPressed: () {
+            ref.read(boardViewModelProvider(Board.project).notifier).remove(project);
+          },
+          icon: const Icon(Icons.close),
+        )
+      ],
       children: project.tasks
           .map(
             (e) => DragListItem(
@@ -136,7 +144,7 @@ class ProjectListView extends ConsumerWidget {
           .toList(),
       onAcceptWithDetails: (details) async {
         if (details.fromListId != null && details.toListId != null) {
-          await ref.read(taskStateProvider.notifier).moveFolder(
+          ref.read(projectStateProvider.notifier).moveFolder(
                 fromListId: details.fromListId!,
                 toListId: details.toListId!,
                 taskId: details.itemId,

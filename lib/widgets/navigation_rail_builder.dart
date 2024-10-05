@@ -105,6 +105,8 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
               children: [
                 if (widget.destinations[selectedRailIndex].panel != null && openPanel)
                   widget.destinations[selectedRailIndex].panel!,
+                if (widget.destinations[selectedRailIndex].children.isEmpty)
+                  const SizedBox.square(dimension: 100),
                 ...widget.destinations[selectedRailIndex].children,
               ],
             ),

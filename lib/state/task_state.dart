@@ -19,29 +19,6 @@ class TaskState extends _$TaskState {
     return ref.watch(sqlRepositoryProvider).getTasks();
   }
 
-  Future<List<Task>> moveFolder({
-    required int fromListId,
-    required int toListId,
-    required int taskId,
-  }) async {
-    return update((tasks) {
-      state = const AsyncLoading();
-
-      final updateFolder =
-          tasks.firstWhere((e) => e.folder.id == toListId).folder.copyWith(id: toListId);
-
-      final update = tasks.map((e) {
-        if (e.id == taskId) {
-          return tasks.firstWhere((e) => e.id == taskId).copyWith(folder: updateFolder);
-        }
-
-        return e;
-      }).toList();
-
-      return update.sortByFolderPriority();
-    });
-  }
-
   Future<void> updateState({
     required int id,
     int? parentId,

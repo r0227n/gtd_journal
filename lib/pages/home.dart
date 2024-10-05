@@ -27,36 +27,46 @@ class Home extends ConsumerWidget {
               panel: ListView.builder(
                 itemCount: projects.length,
                 itemBuilder: (context, index) {
+                  final folderTrailing = projectBoard.contains(projects[index])
+                      ? IconButton(
+                          onPressed: () {
+                            final project =
+                                projectMethod.getProjectByFolderId(projects[index].folder.id);
+
+                            ref
+                                .read(boardViewModelProvider(Board.project).notifier)
+                                .remove(project);
+                          },
+                          icon: const Icon(Icons.close_fullscreen),
+                        )
+                      : IconButton(
+                          onPressed: () {
+                            final project =
+                                projectMethod.getProjectByFolderId(projects[index].folder.id);
+
+                            ref.read(boardViewModelProvider(Board.project).notifier).add(project);
+                          },
+                          icon: const Icon(Icons.open_in_full),
+                        );
+
                   return FolderListTile(
                     title: Text(projects[index].folder.name),
-                    trailing: projectBoard.contains(projects[index])
-                        ? IconButton(
-                            onPressed: () {
-                              final project =
-                                  projectMethod.getProjectByFolderId(projects[index].folder.id);
-
-                              ref
-                                  .read(boardViewModelProvider(Board.project).notifier)
-                                  .remove(project);
-                            },
-                            icon: const Icon(Icons.close_fullscreen),
-                          )
-                        : IconButton(
-                            onPressed: () {
-                              final project =
-                                  projectMethod.getProjectByFolderId(projects[index].folder.id);
-
-                              ref.read(boardViewModelProvider(Board.project).notifier).add(project);
-                            },
-                            icon: const Icon(Icons.open_in_full),
-                          ),
+                    trailing: folderTrailing,
                     children: projects[index]
                         .tasks
                         .map(
                           (e) => ListTile(
                             title: Text(e.title),
                             subtitle: Text(e.description),
-                            onTap: () {},
+                            onTap: () {
+                              showModalSideSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return Center(
+                                      child: Text(e.description),
+                                    );
+                                  });
+                            },
                           ),
                         )
                         .toList(),

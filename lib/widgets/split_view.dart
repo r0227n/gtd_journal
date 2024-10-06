@@ -1,5 +1,21 @@
 import 'package:flutter/material.dart';
 
+/// A typedef for a callback function that is triggered when the position of a divider changes.
+///
+/// The callback provides an object containing:
+/// - `index`: An optional integer representing the index of the divider.
+/// - `dividerPositions`: A list of doubles representing the new positions of the dividers.
+typedef DividerPositionChangedCallback
+    = ValueChanged<({int? index, List<double> dividerPositions})>;
+
+/// A type definition for an exception that indicates an overflow condition.
+typedef OverflowException = Exception;
+
+/// A callback type definition that is triggered when an overflow exception occurs.
+///
+/// The callback receives an [Exception] as a parameter.
+typedef OverflowExceptionCallback = ValueChanged<OverflowException>;
+
 class SplitView extends StatefulWidget {
   const SplitView({
     super.key,
@@ -10,11 +26,20 @@ class SplitView extends StatefulWidget {
     required this.onError,
   });
 
+  /// The constraints for the split view.
   final BoxConstraints constraints;
+
+  /// The children to display in the split view.
   final List<Widget> children;
+
+  /// The initial positions of the dividers.
   final List<double> initialDividerPositions;
-  final ValueChanged<List<double>> onDividerPositionsChanged;
-  final ValueChanged<Exception> onError;
+
+  /// A callback function that is triggered when the position of a divider changes.
+  final DividerPositionChangedCallback onDividerPositionsChanged;
+
+  /// A callback function that is triggered when an overflow exception occurs.
+  final OverflowExceptionCallback onError;
 
   @override
   State<SplitView> createState() => _SplitViewState();
@@ -39,7 +64,7 @@ class _SplitViewState extends State<SplitView> {
         _checkMinWidthConstraint();
         _initializeDividerPositions();
       } catch (e) {
-        widget.onError(e as Exception);
+        widget.onError(e as OverflowException);
       }
     }
   }
@@ -68,7 +93,7 @@ class _SplitViewState extends State<SplitView> {
     int remainingDividers = totalDividers - fixedPositionsCount;
 
     if (remainingDividers < 0) {
-      throw Exception('Too many initial divider positions for the number of children.');
+      throw OverflowException('Too many initial divider positions for the number of children.');
     }
 
     final total = widget.initialDividerPositions.reduce((a, b) => a + b);
@@ -77,7 +102,7 @@ class _SplitViewState extends State<SplitView> {
 
     dividerPositions = [...widget.initialDividerPositions, ...remainingPositions];
 
-    widget.onDividerPositionsChanged(dividerPositions);
+    widget.onDividerPositionsChanged((index: null, dividerPositions: dividerPositions));
   }
 
   /// 最小幅制約をチェックする
@@ -91,7 +116,7 @@ class _SplitViewState extends State<SplitView> {
 
     // 子要素の総幅が最小幅以下になる場合は例外を投げる
     if (availableWidth - fixedWith - totalMinWidth < widget.constraints.minWidth) {
-      throw Exception(
+      throw OverflowException(
           'Adding more children would result in widths less than the minimum width constraint.');
     }
   }
@@ -110,7 +135,7 @@ class _SplitViewState extends State<SplitView> {
             : dividerPositions[index + 1] - minDividerPosition,
       );
     });
-    widget.onDividerPositionsChanged(dividerPositions);
+    widget.onDividerPositionsChanged((index: index, dividerPositions: dividerPositions));
   }
 
   @override

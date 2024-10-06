@@ -113,8 +113,10 @@ class _NavigationRailBuilderState extends State<NavigationRailBuilder> {
                   const SizedBox.square(dimension: 100),
                 ...widget.destinations[selectedRailIndex].children,
               ],
-              onDividerPositionsChanged: (List<double> dividerPositions) {},
-              onError: (Exception e) {
+              onDividerPositionsChanged: (value) {
+                print(value.dividerPositions);
+              },
+              onError: (OverflowException e) {
                 print(e);
               },
             ),

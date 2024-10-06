@@ -27,6 +27,7 @@ class _SplitViewState extends State<SplitView> {
   @override
   void initState() {
     super.initState();
+    dividerPositions = widget.initialDividerPositions;
     _initializeDividerPositions();
   }
 
@@ -43,6 +44,24 @@ class _SplitViewState extends State<SplitView> {
     }
   }
 
+  /// 指定された割合で区切り線を配置する
+  List<double> calculateDivisions(double x, int n) {
+    // 残りの割合を計算
+    double remaining = 1 - x;
+
+    // 分割する各部分の割合
+    double segmentSize = remaining / n;
+
+    // 区切り線の位置をリストに格納
+    List<double> divisionPoints = [];
+    for (int i = 1; i < n; i++) {
+      divisionPoints.add(x + i * segmentSize);
+    }
+
+    return divisionPoints;
+  }
+
+  /// 区切り線の位置を初期化する
   void _initializeDividerPositions() {
     int fixedPositionsCount = widget.initialDividerPositions.length;
     int totalDividers = widget.children.length - 1;
@@ -52,15 +71,16 @@ class _SplitViewState extends State<SplitView> {
       throw Exception('Too many initial divider positions for the number of children.');
     }
 
-    List<double> remainingPositions = List.generate(
-      remainingDividers,
-      (index) => (index + 1) / (remainingDividers + 1),
-    );
+    final total = widget.initialDividerPositions.reduce((a, b) => a + b);
+
+    List<double> remainingPositions = calculateDivisions(total, widget.children.length - 1);
 
     dividerPositions = [...widget.initialDividerPositions, ...remainingPositions];
+
     widget.onDividerPositionsChanged(dividerPositions);
   }
 
+  /// 最小幅制約をチェックする
   void _checkMinWidthConstraint() {
     double availableWidth =
         (_splitViewKey.currentContext?.findRenderObject() as RenderBox).size.width;
@@ -76,6 +96,7 @@ class _SplitViewState extends State<SplitView> {
     }
   }
 
+  /// 区切り線の位置を更新する
   void _handleDragUpdate(int index, DragUpdateDetails details) {
     setState(() {
       final minDividerPosition = widget.constraints.minWidth / context.size!.width;
@@ -94,31 +115,29 @@ class _SplitViewState extends State<SplitView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Row(
       key: _splitViewKey,
-      child: Row(
-        children: [
-          for (int i = 0; i <= dividerPositions.length; i++) ...[
-            Expanded(
-              flex: i == 0
-                  ? (dividerPositions.isEmpty ? 100 : (dividerPositions[0] * 100).round())
-                  : i == dividerPositions.length
-                      ? ((1 - dividerPositions.last) * 100).round()
-                      : ((dividerPositions[i] - dividerPositions[i - 1]) * 100).round(),
-              child: widget.children[i],
-            ),
-            if (i < dividerPositions.length)
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onHorizontalDragUpdate: (details) => _handleDragUpdate(i, details),
-                child: CustomPaint(
-                  size: const Size(10, double.infinity),
-                  painter: DividerPainter(),
-                ),
+      children: [
+        for (int i = 0; i <= dividerPositions.length; i++) ...[
+          Expanded(
+            flex: i == 0
+                ? (dividerPositions.isEmpty ? 100 : (dividerPositions[0] * 100).round())
+                : i == dividerPositions.length
+                    ? ((1 - dividerPositions.last) * 100).round()
+                    : ((dividerPositions[i] - dividerPositions[i - 1]) * 100).round(),
+            child: widget.children[i],
+          ),
+          if (i < dividerPositions.length)
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragUpdate: (details) => _handleDragUpdate(i, details),
+              child: CustomPaint(
+                size: const Size(10, double.infinity),
+                painter: DividerPainter(),
               ),
-          ],
+            ),
         ],
-      ),
+      ],
     );
   }
 }
